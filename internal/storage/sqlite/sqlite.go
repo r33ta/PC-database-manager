@@ -26,32 +26,73 @@ func New(StoragePath string) (*Storage, error) {
 			memory_id INTEGER NOT NULL,
 			cpu_id INTEGER NOT NULL,
 			gpu_id INTEGER NOT NULL,
-			storage_id INTEGER NOT NULL)
-		СREATE TABLE IF NOT EXISTS memory (
+			storage_id INTEGER NOT NULL,
+			FOREIGN KEY(memory_id) REFERENCES memory(id),
+			FOREIGN KEY(cpu_id) REFERENCES cpu(id),
+			FOREIGN KEY(gpu_id) REFERENCES gpu(id),
+			FOREIGN KEY(storage_id) REFERENCES storage(id)
+		)
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	if _, err := stmt.Exec(); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	stmt, err = db.Prepare(
+		`CREATE TABLE IF NOT EXISTS memory (
 			id INTEGER PRIMARY KEY,
-			name TEXT NOT NULL
-			memory_type TEXT NOT NULL
+			name TEXT NOT NULL,
+			memory_type TEXT NOT NULL,
 			capacity INTEGER NOT NULL
 		)
-		CREATE TABLE IF NOT EXISTS cpu (
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	if _, err := stmt.Exec(); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	stmt, err = db.Prepare(
+		`CREATE TABLE IF NOT EXISTS cpu (
 			id INTEGER PRIMARY KEY,
-			name TEXT NOT NULL
-			cores INTEGER NOT NULL
-			threads INTEGER NOT NULL
+			name TEXT NOT NULL,
+			cores INTEGER NOT NULL,
+			threads INTEGER NOT NULL,
 			frequency FLOAT NOT NULL
 		)
-		CREATE TABLE IF NOT EXISTS gpu (
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	if _, err := stmt.Exec(); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	stmt, err = db.Prepare(
+		`CREATE TABLE IF NOT EXISTS gpu (
 			id INTEGER PRIMARY KEY,
-			name TEXT NOT NULL
-			vendor TEXT NOT NULL
-			memory INTEGER NOT NULL
+			name TEXT NOT NULL,
+			vendor TEXT NOT NULL,
+			memory INTEGER NOT NULL,
 			frequency FLOAT NOT NULL
 		)
-		CREATE TABLE IF NOT EXISTS storage (
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	if _, err := stmt.Exec(); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	stmt, err = db.Prepare(
+		`CREATE TABLE IF NOT EXISTS storage (
 			id INTEGER PRIMARY KEY,
-			name TEXT NOT NULL
-			type TEXT NOT NULL
-			capacity INTEGER NOT NULL
+			name TEXT NOT NULL,
+			type TEXT NOT NULL,
+			capacity INTEGER NOT NULL,
 			speed INTEGER NOT NULL
 		)
 	`)
@@ -64,3 +105,34 @@ func New(StoragePath string) (*Storage, error) {
 
 	return &Storage{db: db}, nil
 }
+
+/*
+`CREATE TABLE IF NOT EXISTS memory (
+			id INTEGER PRIMARY KEY,
+			name TEXT NOT NULL
+			memory_type TEXT NOT NULL
+			capacity INTEGER NOT NULL
+		)
+		`
+		`CREATE TABLE IF NOT EXISTS cpu (
+			id INTEGER PRIMARY KEY,
+			name TEXT NOT NULL
+			cores INTEGER NOT NULL
+			threads INTEGER NOT NULL
+			frequency FLOAT NOT NULL
+		)`
+		`CREATE TABLE IF NOT EXISTS gpu (
+			id INTEGER PRIMARY KEY,
+			name TEXT NOT NULL
+			vendor TEXT NOT NULL
+			memory INTEGER NOT NULL
+			frequency FLOAT NOT NULL
+		)`
+		`CREATE TABLE IF NOT EXISTS storage (
+			id INTEGER PRIMARY KEY,
+			name TEXT NOT NULL
+			type TEXT NOT NULL
+			capacity INTEGER NOT NULL
+			speed INTEGER NOT NULL
+		)`
+*/
