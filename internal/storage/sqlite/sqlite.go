@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/mattn/go-sqlite3" // init sqlite3 driver
+	"github.com/mattn/go-sqlite3"
+	"github.com/r33ta/pc-database-manager/internal/storage"
 )
 
 type Storage struct {
@@ -61,7 +62,7 @@ func New(StoragePath string) (*Storage, error) {
 			name TEXT NOT NULL,
 			cores INTEGER NOT NULL,
 			threads INTEGER NOT NULL,
-			frequency FLOAT NOT NULL
+			frequency INTEGER NOT NULL
 		)
 	`)
 	if err != nil {
@@ -75,9 +76,9 @@ func New(StoragePath string) (*Storage, error) {
 		`CREATE TABLE IF NOT EXISTS gpu (
 			id INTEGER PRIMARY KEY,
 			name TEXT NOT NULL,
-			vendor TEXT NOT NULL,
+			manufacturer TEXT NOT NULL,
 			memory INTEGER NOT NULL,
-			frequency FLOAT NOT NULL
+			frequency INTEGER NOT NULL
 		)
 	`)
 	if err != nil {
@@ -91,9 +92,8 @@ func New(StoragePath string) (*Storage, error) {
 		`CREATE TABLE IF NOT EXISTS storage (
 			id INTEGER PRIMARY KEY,
 			name TEXT NOT NULL,
-			type TEXT NOT NULL,
 			capacity INTEGER NOT NULL,
-			speed INTEGER NOT NULL
+			type TEXT NOT NULL
 		)
 	`)
 	if err != nil {
@@ -106,33 +106,117 @@ func New(StoragePath string) (*Storage, error) {
 	return &Storage{db: db}, nil
 }
 
-/*
-`CREATE TABLE IF NOT EXISTS memory (
-			id INTEGER PRIMARY KEY,
-			name TEXT NOT NULL
-			memory_type TEXT NOT NULL
-			capacity INTEGER NOT NULL
-		)
-		`
-		`CREATE TABLE IF NOT EXISTS cpu (
-			id INTEGER PRIMARY KEY,
-			name TEXT NOT NULL
-			cores INTEGER NOT NULL
-			threads INTEGER NOT NULL
-			frequency FLOAT NOT NULL
-		)`
-		`CREATE TABLE IF NOT EXISTS gpu (
-			id INTEGER PRIMARY KEY,
-			name TEXT NOT NULL
-			vendor TEXT NOT NULL
-			memory INTEGER NOT NULL
-			frequency FLOAT NOT NULL
-		)`
-		`CREATE TABLE IF NOT EXISTS storage (
-			id INTEGER PRIMARY KEY,
-			name TEXT NOT NULL
-			type TEXT NOT NULL
-			capacity INTEGER NOT NULL
-			speed INTEGER NOT NULL
-		)`
-*/
+func (s *Storage) SavePC(name string, memoryID, cpuID, gpuID, storageID int64) (int64, error) {
+	const op = "storage.sqlite.SavePC"
+
+	stmt, err := s.db.Prepare("INSERT INTO pc (name, memory_id, cpu_id, gpu_id, storage_id) VALUES (?, ?, ?, ?, ?)")
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	res, err := stmt.Exec(name, memoryID, cpuID, gpuID, storageID)
+	if err != nil {
+		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
+			return 0, fmt.Errorf("%s: %w", op, storage.ErrPCAlreadyExists)
+		}
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return id, nil
+}
+
+func (s *Storage) SaveMemory(name string, memoryType string, capacity int64) (int64, error) {
+	const op = "storage.sqlite.SaveMemory"
+
+	stmt, err := s.db.Prepare("INSERT INTO memory (name, memory_type, capacity) VALUES (?, ?, ?)")
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	res, err := stmt.Exec(name, memoryType, capacity)
+	if err != nil {
+		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
+			return 0, fmt.Errorf("%s: %w", op, storage.ErrMemoryAlreadyExists)
+		}
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return id, nil
+}
+
+func (s *Storage) SaveCpu(name string, cores, threads, frequency int64) (int64, error) {
+	const op = "storage.sqlite.SaveCpu"
+
+	stmt, err := s.db.Prepare("INSERT INTO cpu (name, cores, threads, frequency) VALUES (?, ?, ?, ?)")
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	res, err := stmt.Exec(name, cores, threads, frequency)
+	if err != nil {
+		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
+			return 0, fmt.Errorf("%s: %w", op, storage.ErrCpuAlreadyExists)
+		}
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return id, nil
+}
+
+func (s *Storage) SaveGpu(name string, manufacturer string, memory, frequency int64) (int64, error) {
+	const op = "storage.sqlite.SaveGpu"
+
+	stmt, err := s.db.Prepare("INSERT INTO gpu (name, manufacturer, memory, frequency) VALUES (?, ?, ?, ?)")
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	res, err := stmt.Exec(name, manufacturer, memory, frequency)
+	if err != nil {
+		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
+			return 0, fmt.Errorf("%s: %w", op, storage.ErrGpuAlreadyExists)
+		}
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return id, nil
+}
+
+func (s *Storage) SaveStorage(name string, capacity int64, storage_type string) (int64, error) {
+	const op = "storage.sqlite.SaveStorage"
+
+	stmt, err := s.db.Prepare("INSERT INTO storage (name, capacity, type) VALUES (?, ?, ?)")
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	res, err := stmt.Exec(name, capacity, storage_type)
+	if err != nil {
+		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
+			return 0, fmt.Errorf("%s: %w", op, storage.ErrStorageAlreadyExists)
+		}
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return id, nil
+}
