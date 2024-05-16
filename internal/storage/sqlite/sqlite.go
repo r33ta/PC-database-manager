@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mattn/go-sqlite3"
+	"github.com/r33ta/pc-database-manager/internal/models/pc"
 	"github.com/r33ta/pc-database-manager/internal/storage"
 )
 
@@ -219,4 +220,38 @@ func (s *Storage) SaveStorage(name string, capacity int64, storage_type string) 
 	}
 
 	return id, nil
+}
+
+func (s *Storage) GetPC(id int64) (*pc.PC, error) {
+	const op = "storage.sqlite.GetPC"
+
+	stmt, err := s.db.Prepare("SELECT id, name, memory_id, cpu_id, gpu_id, storage_id FROM pc")
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	var name string
+	var memoryID, cpuID, gpuID, storageID int64
+	err = stmt.QueryRow(id).Scan(&name)
+	if err != nil {
+		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
+	}
+	err = stmt.QueryRow(id).Scan(&memoryID)
+	if err != nil {
+		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
+	}
+	err = stmt.QueryRow(id).Scan(&cpuID)
+	if err != nil {
+		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
+	}
+	err = stmt.QueryRow(id).Scan(&gpuID)
+	if err != nil {
+		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
+	}
+	err = stmt.QueryRow(id).Scan(&storageID)
+	if err != nil {
+		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
+	}
+
+	return &pc.PC{Name: name, MemoryID: memoryID, CPUID: cpuID, GPUID: gpuID, StorageID: storageID}, nil
 }
