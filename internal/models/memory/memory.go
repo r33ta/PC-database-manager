@@ -1,14 +1,13 @@
 package memory
 
 const (
-	DDR3 = "DDR3"
-	DDR4 = "DDR4"
-	DDR5 = "DDR5"
+	SSD = "SSD"
+	HDD = "HDD"
 )
 
 type Memory struct {
-	ID         int
-	Name       string
-	MemoryType string
-	Capacity   int
+	ID          int64
+	Name        string
+	Capacity    int64
+	StorageType string
 }
