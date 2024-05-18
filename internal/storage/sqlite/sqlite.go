@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/mattn/go-sqlite3"
@@ -134,7 +135,7 @@ func (s *Storage) SavePC(name string, ramID, cpuID, gpuID, storageID int64) (int
 	return id, nil
 }
 
-func (s *Storage) SaveRAM(name string, memoryType string, capacity int64) (int64, error) {
+func (s *Storage) SaveRam(name string, memoryType string, capacity int64) (int64, error) {
 	const op = "storage.sqlite.SaveRam"
 
 	stmt, err := s.db.Prepare("INSERT INTO ram (name, memory_type, capacity) VALUES (?, ?, ?)")
@@ -231,12 +232,15 @@ func (s *Storage) GetPC(id int64) (*pc.PC, error) {
 
 	stmt, err := s.db.Prepare("SELECT name, ram_id, cpu_id, gpu_id, storage_id FROM pc WHERE id = ?")
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: prepare statement: %w", op, err)
 	}
 
 	var name string
 	var ramID, cpuID, gpuID, storageID int64
 	err = stmt.QueryRow(id).Scan(&name, &ramID, &cpuID, &gpuID, &storageID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, storage.ErrPCNotFound
+	}
 	if err != nil {
 		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
 	}
@@ -249,12 +253,15 @@ func (s *Storage) GetCpu(id int64) (*cpu.CPU, error) {
 
 	stmt, err := s.db.Prepare("SELECT name, cores, threads, frequency FROM cpu WHERE id = ?")
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: prepare statement: %w", op, err)
 	}
 
 	var name string
 	var cores, threads, frequency int64
 	err = stmt.QueryRow(id).Scan(&name, &cores, &threads, &frequency)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, storage.ErrCpuNotFound
+	}
 	if err != nil {
 		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
 	}
@@ -267,12 +274,15 @@ func (s *Storage) GetGpu(id int64) (*gpu.GPU, error) {
 
 	stmt, err := s.db.Prepare("SELECT name, manufacturer, memory, frequency FROM gpu WHERE id = ?")
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: prepare statement: %w", op, err)
 	}
 
 	var name, manufacturer string
 	var memory, frequency int64
 	err = stmt.QueryRow(id).Scan(&name, &manufacturer, &memory, &frequency)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, storage.ErrGpuNotFound
+	}
 	if err != nil {
 		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
 	}
@@ -285,12 +295,15 @@ func (s *Storage) GetRam(id int64) (*ram.RAM, error) {
 
 	stmt, err := s.db.Prepare("SELECT name, memory_type, capacity FROM memory WHERE id = ?")
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: prepare statement: %w", op, err)
 	}
 
 	var name, memoryType string
 	var capacity int64
 	err = stmt.QueryRow(id).Scan(&name, &memoryType, &capacity)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, storage.ErrRamNotFound
+	}
 	if err != nil {
 		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
 	}
@@ -303,12 +316,15 @@ func (s *Storage) GetMemory(id int64) (*memory.Memory, error) {
 
 	stmt, err := s.db.Prepare("SELECT name, capacity, type FROM storage WHERE id = ?")
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: prepare statement: %w", op, err)
 	}
 
 	var name, storageType string
 	var capacity int64
 	err = stmt.QueryRow(id).Scan(&name, &capacity, &storageType)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, storage.ErrMemoryNotFound
+	}
 	if err != nil {
 		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
 	}
