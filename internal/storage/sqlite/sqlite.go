@@ -33,11 +33,11 @@ func New(StoragePath string) (*Storage, error) {
 			ram_id INTEGER NOT NULL,
 			cpu_id INTEGER NOT NULL,
 			gpu_id INTEGER NOT NULL,
-			storage_id INTEGER NOT NULL,
+			memory_id INTEGER NOT NULL,
 			FOREIGN KEY(ram_id) REFERENCES ram(id),
 			FOREIGN KEY(cpu_id) REFERENCES cpu(id),
 			FOREIGN KEY(gpu_id) REFERENCES gpu(id),
-			FOREIGN KEY(storage_id) REFERENCES storage(id)
+			FOREIGN KEY(memory_id) REFERENCES memory(id)
 		)
 	`)
 	if err != nil {
@@ -95,7 +95,7 @@ func New(StoragePath string) (*Storage, error) {
 	}
 
 	stmt, err = db.Prepare(
-		`CREATE TABLE IF NOT EXISTS storage (
+		`CREATE TABLE IF NOT EXISTS memory (
 			id INTEGER PRIMARY KEY,
 			name TEXT NOT NULL,
 			capacity INTEGER NOT NULL,
@@ -112,14 +112,14 @@ func New(StoragePath string) (*Storage, error) {
 	return &Storage{db: db}, nil
 }
 
-func (s *Storage) SavePC(name string, ramID, cpuID, gpuID, storageID int64) (int64, error) {
+func (s *Storage) SavePC(name string, ramID, cpuID, gpuID, memoryID int64) (int64, error) {
 	const op = "storage.sqlite.SavePC"
 
-	stmt, err := s.db.Prepare("INSERT INTO pc (name, ram_id, cpu_id, gpu_id, storage_id) VALUES (?, ?, ?, ?, ?)")
+	stmt, err := s.db.Prepare("INSERT INTO pc (name, ram_id, cpu_id, gpu_id, memory_id) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
-	res, err := stmt.Exec(name, ramID, cpuID, gpuID, storageID)
+	res, err := stmt.Exec(name, ramID, cpuID, gpuID, memoryID)
 	if err != nil {
 		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
 			return 0, fmt.Errorf("%s: %w", op, storage.ErrPCAlreadyExists)
@@ -207,7 +207,7 @@ func (s *Storage) SaveGpu(name string, manufacturer string, memory, frequency in
 func (s *Storage) SaveMemory(name string, capacity int64, storage_type string) (int64, error) {
 	const op = "storage.sqlite.SaveMemory"
 
-	stmt, err := s.db.Prepare("INSERT INTO storage (name, capacity, type) VALUES (?, ?, ?)")
+	stmt, err := s.db.Prepare("INSERT INTO memory (name, capacity, type) VALUES (?, ?, ?)")
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -230,14 +230,14 @@ func (s *Storage) SaveMemory(name string, capacity int64, storage_type string) (
 func (s *Storage) GetPC(id int64) (*pc.PC, error) {
 	const op = "storage.sqlite.GetPC"
 
-	stmt, err := s.db.Prepare("SELECT name, ram_id, cpu_id, gpu_id, storage_id FROM pc WHERE id = ?")
+	stmt, err := s.db.Prepare("SELECT name, ram_id, cpu_id, gpu_id, memory_id FROM pc WHERE id = ?")
 	if err != nil {
 		return nil, fmt.Errorf("%s: prepare statement: %w", op, err)
 	}
 
 	var name string
-	var ramID, cpuID, gpuID, storageID int64
-	err = stmt.QueryRow(id).Scan(&name, &ramID, &cpuID, &gpuID, &storageID)
+	var ramID, cpuID, gpuID, memoryID int64
+	err = stmt.QueryRow(id).Scan(&name, &ramID, &cpuID, &gpuID, &memoryID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, storage.ErrPCNotFound
 	}
@@ -245,7 +245,7 @@ func (s *Storage) GetPC(id int64) (*pc.PC, error) {
 		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
 	}
 
-	return &pc.PC{ID: id, Name: name, RAMID: ramID, CPUID: cpuID, GPUID: gpuID, StorageID: storageID}, nil
+	return &pc.PC{ID: id, Name: name, RAMID: ramID, CPUID: cpuID, GPUID: gpuID, MemoryID: memoryID}, nil
 }
 
 func (s *Storage) GetCpu(id int64) (*cpu.CPU, error) {
@@ -293,7 +293,7 @@ func (s *Storage) GetGpu(id int64) (*gpu.GPU, error) {
 func (s *Storage) GetRam(id int64) (*ram.RAM, error) {
 	const op = "storage.sqlite.GetRam"
 
-	stmt, err := s.db.Prepare("SELECT name, memory_type, capacity FROM memory WHERE id = ?")
+	stmt, err := s.db.Prepare("SELECT name, memory_type, capacity FROM ram WHERE id = ?")
 	if err != nil {
 		return nil, fmt.Errorf("%s: prepare statement: %w", op, err)
 	}
@@ -314,7 +314,7 @@ func (s *Storage) GetRam(id int64) (*ram.RAM, error) {
 func (s *Storage) GetMemory(id int64) (*memory.Memory, error) {
 	const op = "storage.sqlite.GetMemory"
 
-	stmt, err := s.db.Prepare("SELECT name, capacity, type FROM storage WHERE id = ?")
+	stmt, err := s.db.Prepare("SELECT name, capacity, type FROM memory WHERE id = ?")
 	if err != nil {
 		return nil, fmt.Errorf("%s: prepare statement: %w", op, err)
 	}
@@ -330,4 +330,79 @@ func (s *Storage) GetMemory(id int64) (*memory.Memory, error) {
 	}
 
 	return &memory.Memory{ID: id, Name: name, Capacity: capacity, StorageType: storageType}, nil
+}
+
+func (s *Storage) DeletePC(id int64) error {
+	op := "storage.sqlite.deletePC"
+	stmt, err := s.db.Prepare("DELETE FROM pc WHERE id = ?")
+	if err != nil {
+		return fmt.Errorf("%s prepare statement: %w", op, err)
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("%s execute statement: %w", op, err)
+	}
+
+	return nil
+}
+
+func (s *Storage) DeleteCpu(id int64) error {
+	op := "storage.sqlite.deleteCpu"
+	stmt, err := s.db.Prepare("DELETE FROM cpu WHERE id = ?")
+	if err != nil {
+		return fmt.Errorf("%s prepare statement: %w", op, err)
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("%s execute statement: %w", op, err)
+	}
+
+	return nil
+}
+
+func (s *Storage) DeleteGpu(id int64) error {
+	op := "storage.sqlite.deleteGpu"
+	stmt, err := s.db.Prepare("DELETE FROM gpu WHERE id = ?")
+	if err != nil {
+		return fmt.Errorf("%s prepare statement: %w", op, err)
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("%s execute statement: %w", op, err)
+	}
+
+	return nil
+}
+
+func (s *Storage) DeleteRam(id int64) error {
+	op := "storage.sqlite.deleteRam"
+	stmt, err := s.db.Prepare("DELETE FROM ram WHERE id = ?")
+	if err != nil {
+		return fmt.Errorf("%s prepare statement: %w", op, err)
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("%s execute statement: %w", op, err)
+	}
+
+	return nil
+}
+
+func (s *Storage) DeleteMemory(id int64) error {
+	op := "storage.sqlite.deleteMemory"
+	stmt, err := s.db.Prepare("DELETE FROM memory WHERE id = ?")
+	if err != nil {
+		return fmt.Errorf("%s prepare statement: %w", op, err)
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("%s execute statement: %w", op, err)
+	}
+
+	return nil
 }
