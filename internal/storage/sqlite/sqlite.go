@@ -406,3 +406,7 @@ func (s *Storage) DeleteMemory(id int64) error {
 
 	return nil
 }
+
+func (s *Storage) Close() error {
+	return s.db.Close()
+}
