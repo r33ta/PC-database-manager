@@ -6,5 +6,5 @@ type PC struct {
 	RAMID    int64
 	CPUID    int64
 	GPUID    int64
-	memoryID int64
+	MemoryID int64
 }
