@@ -410,3 +410,7 @@ func (s *Storage) DeleteMemory(id int64) error {
 func (s *Storage) Close() error {
 	return s.db.Close()
 }
+
+func (s *Storage) Ping() error {
+	return s.db.Ping()
+}
