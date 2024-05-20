@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/r33ta/pc-database-manager/internal/config"
 	"github.com/r33ta/pc-database-manager/internal/lib/logger/sl"
 	"github.com/r33ta/pc-database-manager/internal/storage/sqlite"
@@ -38,7 +39,7 @@ func main() {
 	}
 	fmt.Println(pcs)
 
-	// TODO: init router: chi, "chi render"
+	router := chi.NewRouter()
 
 	// TODO: start server
 }
