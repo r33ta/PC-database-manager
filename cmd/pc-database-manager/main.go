@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/r33ta/pc-database-manager/internal/config"
+	mwLogger "github.com/r33ta/pc-database-manager/internal/http-server/middleware/logger"
 	"github.com/r33ta/pc-database-manager/internal/lib/logger/sl"
 	"github.com/r33ta/pc-database-manager/internal/storage/sqlite"
 )
@@ -31,15 +32,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	// testing
-	pcs, err := storage.GetPC(1)
-	if err != nil {
-		log.Error("failed to get all pcs", sl.Err(err))
-		os.Exit(1)
-	}
-	fmt.Println(pcs)
+	_ = storage
 
 	router := chi.NewRouter()
+
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
+	router.Use(mwLogger.New(log))
+	router.Use(middleware.Recoverer)
 
 	// TODO: start server
 }
