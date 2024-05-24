@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/r33ta/pc-database-manager/internal/config"
 	mwLogger "github.com/r33ta/pc-database-manager/internal/http-server/middleware/logger"
+	"github.com/r33ta/pc-database-manager/internal/lib/logger/handlers/slogpretty"
 	"github.com/r33ta/pc-database-manager/internal/lib/logger/sl"
 	"github.com/r33ta/pc-database-manager/internal/storage/sqlite"
 )
@@ -25,6 +26,7 @@ func main() {
 
 	log.Info("starting...", slog.String("env", cfg.Env))
 	log.Debug("debug messages are enabled")
+	log.Error("error messages are enabled")
 
 	storage, err := sqlite.New(cfg.StoragePath)
 	if err != nil {
@@ -64,13 +66,13 @@ func setupLogger(env string) *slog.Logger {
 }
 
 func setupPrettySlog() *slog.Logger {
-	opts := slog.PrettyHandlerOptions{
+	opts := slogpretty.PrettyHandlerOptions{
 		SlogOpts: &slog.HandlerOptions{
 			Level: slog.LevelDebug,
 		},
 	}
 
-	handler := opts.NewPrettyHander(os.Stdout)
+	handler := opts.NewPrettyHandler(os.Stdout)
 
 	return slog.New(handler)
 }

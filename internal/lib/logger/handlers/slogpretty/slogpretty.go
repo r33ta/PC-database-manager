@@ -6,22 +6,37 @@ import (
 	"io"
 	stdLog "log"
 	"log/slog"
+	"os"
 
 	"github.com/fatih/color"
 )
+
+func New(level slog.Level) *slog.Logger {
+	opts := PrettyHandlerOptions{
+		SlogOpts: &slog.HandlerOptions{
+			Level: level,
+		},
+	}
+
+	handler := opts.NewPrettyHandler(os.Stdout)
+
+	return slog.New(handler)
+}
 
 type PrettyHandlerOptions struct {
 	SlogOpts *slog.HandlerOptions
 }
 
 type PrettyHandler struct {
-	opts *PrettyHandlerOptions
+	PrettyHandlerOptions
 	slog.Handler
 	l     *stdLog.Logger
 	attrs []slog.Attr
 }
 
-func (opts *PrettyHandlerOptions) NewPrettyHander(out io.Writer) *PrettyHandler {
+func (opts PrettyHandlerOptions) NewPrettyHandler(
+	out io.Writer,
+) *PrettyHandler {
 	h := &PrettyHandler{
 		Handler: slog.NewJSONHandler(out, opts.SlogOpts),
 		l:       stdLog.New(out, "", 0),
@@ -46,11 +61,13 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 
 	fields := make(map[string]interface{}, r.NumAttrs())
 
-	r.Attrs(func(a slog.Attr) bool {
-		fields[a.Key] = a.Value.Any()
+	r.Attrs(
+		func(a slog.Attr) bool {
+			fields[a.Key] = a.Value.Any()
 
-		return true
-	})
+			return true
+		},
+	)
 
 	for _, a := range h.attrs {
 		fields[a.Key] = a.Value.Any()
@@ -66,7 +83,7 @@ func (h *PrettyHandler) Handle(_ context.Context, r slog.Record) error {
 		}
 	}
 
-	timeStr := r.Time.Format("[15:04:05.000]")
+	timeStr := r.Time.Format("[15:05:05.000]")
 	msg := color.CyanString(r.Message)
 
 	h.l.Println(
@@ -88,7 +105,6 @@ func (h *PrettyHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 }
 
 func (h *PrettyHandler) WithGroup(name string) slog.Handler {
-	// TODO: implement
 	return &PrettyHandler{
 		Handler: h.Handler.WithGroup(name),
 		l:       h.l,
