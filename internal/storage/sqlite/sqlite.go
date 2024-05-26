@@ -135,7 +135,7 @@ func (s *Storage) SavePC(name string, ramID, cpuID, gpuID, memoryID int64) (int6
 	return id, nil
 }
 
-func (s *Storage) SaveRam(name string, memoryType string, capacity int64) (int64, error) {
+func (s *Storage) SaveRAM(name, memoryType string, capacity int64) (int64, error) {
 	const op = "storage.sqlite.SaveRam"
 
 	stmt, err := s.db.Prepare("INSERT INTO ram (name, memory_type, capacity) VALUES (?, ?, ?)")
@@ -158,7 +158,7 @@ func (s *Storage) SaveRam(name string, memoryType string, capacity int64) (int64
 	return id, nil
 }
 
-func (s *Storage) SaveCpu(name string, cores, threads, frequency int64) (int64, error) {
+func (s *Storage) SaveCPU(name string, cores, threads, frequency int64) (int64, error) {
 	const op = "storage.sqlite.SaveCpu"
 
 	stmt, err := s.db.Prepare("INSERT INTO cpu (name, cores, threads, frequency) VALUES (?, ?, ?, ?)")
@@ -181,7 +181,7 @@ func (s *Storage) SaveCpu(name string, cores, threads, frequency int64) (int64, 
 	return id, nil
 }
 
-func (s *Storage) SaveGpu(name string, manufacturer string, memory, frequency int64) (int64, error) {
+func (s *Storage) SaveGPU(name, manufacturer string, memory, frequency int64) (int64, error) {
 	const op = "storage.sqlite.SaveGpu"
 
 	stmt, err := s.db.Prepare("INSERT INTO gpu (name, manufacturer, memory, frequency) VALUES (?, ?, ?, ?)")
@@ -248,7 +248,7 @@ func (s *Storage) GetPC(id int64) (*pc.PC, error) {
 	return &pc.PC{ID: id, Name: name, RAMID: ramID, CPUID: cpuID, GPUID: gpuID, MemoryID: memoryID}, nil
 }
 
-func (s *Storage) GetCpu(id int64) (*cpu.CPU, error) {
+func (s *Storage) GetCPU(id int64) (*cpu.CPU, error) {
 	const op = "storage.sqlite.GetCpu"
 
 	stmt, err := s.db.Prepare("SELECT name, cores, threads, frequency FROM cpu WHERE id = ?")
@@ -269,7 +269,7 @@ func (s *Storage) GetCpu(id int64) (*cpu.CPU, error) {
 	return &cpu.CPU{ID: id, Name: name, Cores: cores, Threads: threads, Frequency: frequency}, nil
 }
 
-func (s *Storage) GetGpu(id int64) (*gpu.GPU, error) {
+func (s *Storage) GetGPU(id int64) (*gpu.GPU, error) {
 	const op = "storage.sqlite.GetGpu"
 
 	stmt, err := s.db.Prepare("SELECT name, manufacturer, memory, frequency FROM gpu WHERE id = ?")
@@ -290,7 +290,7 @@ func (s *Storage) GetGpu(id int64) (*gpu.GPU, error) {
 	return &gpu.GPU{ID: id, Name: name, Manufacturer: manufacturer, Memory: memory, Frequency: frequency}, nil
 }
 
-func (s *Storage) GetRam(id int64) (*ram.RAM, error) {
+func (s *Storage) GetRAM(id int64) (*ram.RAM, error) {
 	const op = "storage.sqlite.GetRam"
 
 	stmt, err := s.db.Prepare("SELECT name, memory_type, capacity FROM ram WHERE id = ?")
@@ -347,7 +347,7 @@ func (s *Storage) DeletePC(id int64) error {
 	return nil
 }
 
-func (s *Storage) DeleteCpu(id int64) error {
+func (s *Storage) DeleteCPU(id int64) error {
 	op := "storage.sqlite.deleteCpu"
 	stmt, err := s.db.Prepare("DELETE FROM cpu WHERE id = ?")
 	if err != nil {
@@ -362,7 +362,7 @@ func (s *Storage) DeleteCpu(id int64) error {
 	return nil
 }
 
-func (s *Storage) DeleteGpu(id int64) error {
+func (s *Storage) DeleteGPU(id int64) error {
 	op := "storage.sqlite.deleteGpu"
 	stmt, err := s.db.Prepare("DELETE FROM gpu WHERE id = ?")
 	if err != nil {
@@ -377,7 +377,7 @@ func (s *Storage) DeleteGpu(id int64) error {
 	return nil
 }
 
-func (s *Storage) DeleteRam(id int64) error {
+func (s *Storage) DeleteRAM(id int64) error {
 	op := "storage.sqlite.deleteRam"
 	stmt, err := s.db.Prepare("DELETE FROM ram WHERE id = ?")
 	if err != nil {
