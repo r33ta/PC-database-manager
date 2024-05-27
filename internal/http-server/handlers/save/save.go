@@ -93,11 +93,18 @@ func NewPC(log *slog.Logger, pcSaver PCSaver) http.HandlerFunc {
 		log.Info("request body decoded", slog.Any("request", req))
 
 		if err := validator.New().Struct(req); err != nil {
+			validateErr := err.(validator.ValidationErrors)
+
 			log.Error("invalid request", sl.Err(err))
 
-			render.JSON(w, r, resp.Error("invalid request"))
+			render.JSON(w, r, resp.ValidationError(validateErr))
 
 			return
+		}
+
+		name := req.Name
+		if name == "" {
+			name = "Unknown PC"
 		}
 	}
 }
@@ -125,11 +132,18 @@ func NewRAM(log *slog.Logger, ramSaver RAMSaver) http.HandlerFunc {
 		log.Info("request body decoded", slog.Any("request", req))
 
 		if err := validator.New().Struct(req); err != nil {
+			validateErr := err.(validator.ValidationErrors)
+
 			log.Error("invalid request", sl.Err(err))
 
-			render.JSON(w, r, resp.Error("invalid request"))
+			render.JSON(w, r, resp.ValidationError(validateErr))
 
 			return
+		}
+
+		name := req.Name
+		if name == "" {
+			name = "Unknown RAM"
 		}
 	}
 }
@@ -157,11 +171,18 @@ func NewCPU(log *slog.Logger, cpuSaver CPUSaver) http.HandlerFunc {
 		log.Info("request body decoded", slog.Any("request", req))
 
 		if err := validator.New().Struct(req); err != nil {
+			validateErr := err.(validator.ValidationErrors)
+
 			log.Error("invalid request", sl.Err(err))
 
-			render.JSON(w, r, resp.Error("invalid request"))
+			render.JSON(w, r, resp.ValidationError(validateErr))
 
 			return
+		}
+
+		name := req.Name
+		if name == "" {
+			name = "Unknown CPU"
 		}
 	}
 }
@@ -189,11 +210,18 @@ func NewGPU(log *slog.Logger, gpuSaver GPUSaver) http.HandlerFunc {
 		log.Info("request body decoded", slog.Any("request", req))
 
 		if err := validator.New().Struct(req); err != nil {
+			validateErr := err.(validator.ValidationErrors)
+
 			log.Error("invalid request", sl.Err(err))
 
-			render.JSON(w, r, resp.Error("invalid request"))
+			render.JSON(w, r, resp.ValidationError(validateErr))
 
 			return
+		}
+
+		name := req.Name
+		if name == "" {
+			name = "Unknown GPU"
 		}
 	}
 }
@@ -221,11 +249,18 @@ func NewMemory(log *slog.Logger, memorySaver MemorySaver) http.HandlerFunc {
 		log.Info("request body decoded", slog.Any("request", req))
 
 		if err := validator.New().Struct(req); err != nil {
+			validateErr := err.(validator.ValidationErrors)
+
 			log.Error("invalid request", sl.Err(err))
 
-			render.JSON(w, r, resp.Error("invalid request"))
+			render.JSON(w, r, resp.ValidationError(validateErr))
 
 			return
+		}
+
+		name := req.Name
+		if name == "" {
+			name = "Unknown Memory"
 		}
 	}
 }
