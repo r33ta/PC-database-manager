@@ -13,11 +13,10 @@ import (
 
 type Response struct {
 	resp.Response
-	Name string `json:"name"`
 }
 
 type RequestPC struct {
-	Name     string `json:"name"`
+	Name     string `json:"name" validate:"required"`
 	RAMID    int64  `json:"ram_id" validate:"required"`
 	CPUID    int64  `json:"cpu_id" validate:"required"`
 	GPUID    int64  `json:"gpu_id" validate:"required"`
@@ -25,27 +24,27 @@ type RequestPC struct {
 }
 
 type RequestRAM struct {
-	Name        string `json:"name"`
+	Name        string `json:"name" validate:"required"`
 	Memory_type string `json:"memory_type" validate:"required"`
 	Capacity    int64  `json:"capacity" validate:"required"`
 }
 
 type RequestCPU struct {
-	Name      string `json:"name"`
+	Name      string `json:"name" validate:"required"`
 	Cores     int64  `json:"cores" validate:"required"`
 	Threads   int64  `json:"threads" validate:"required"`
 	Frequency int64  `json:"frequency" validate:"required"`
 }
 
 type RequestGPU struct {
-	Name         string `json:"name"`
+	Name         string `json:"name" validate:"required"`
 	Manufacturer string `json:"manufacturer" validate:"required"`
 	Memory       int64  `json:"memory" validate:"required"`
 	Frequency    int64  `json:"frequency" validate:"required"`
 }
 
 type RequestMemory struct {
-	Name        string `json:"name"`
+	Name        string `json:"name" validate:"required"`
 	Capacity    int64  `json:"capacity" validate:"required"`
 	StorageType string `json:"storage_type" validate:"required"`
 }
@@ -101,11 +100,6 @@ func NewPC(log *slog.Logger, pcSaver PCSaver) http.HandlerFunc {
 
 			return
 		}
-
-		name := req.Name
-		if name == "" {
-			name = "Unknown PC"
-		}
 	}
 }
 
@@ -139,11 +133,6 @@ func NewRAM(log *slog.Logger, ramSaver RAMSaver) http.HandlerFunc {
 			render.JSON(w, r, resp.ValidationError(validateErr))
 
 			return
-		}
-
-		name := req.Name
-		if name == "" {
-			name = "Unknown RAM"
 		}
 	}
 }
@@ -179,11 +168,6 @@ func NewCPU(log *slog.Logger, cpuSaver CPUSaver) http.HandlerFunc {
 
 			return
 		}
-
-		name := req.Name
-		if name == "" {
-			name = "Unknown CPU"
-		}
 	}
 }
 
@@ -218,11 +202,6 @@ func NewGPU(log *slog.Logger, gpuSaver GPUSaver) http.HandlerFunc {
 
 			return
 		}
-
-		name := req.Name
-		if name == "" {
-			name = "Unknown GPU"
-		}
 	}
 }
 
@@ -256,11 +235,6 @@ func NewMemory(log *slog.Logger, memorySaver MemorySaver) http.HandlerFunc {
 			render.JSON(w, r, resp.ValidationError(validateErr))
 
 			return
-		}
-
-		name := req.Name
-		if name == "" {
-			name = "Unknown Memory"
 		}
 	}
 }
