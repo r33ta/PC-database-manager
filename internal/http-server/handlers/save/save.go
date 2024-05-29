@@ -1,6 +1,7 @@
 package save
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	resp "github.com/r33ta/pc-database-manager/internal/lib/api/response"
 	"github.com/r33ta/pc-database-manager/internal/lib/logger/sl"
+	"github.com/r33ta/pc-database-manager/internal/storage"
 )
 
 type Response struct {
@@ -100,6 +102,27 @@ func NewPC(log *slog.Logger, pcSaver PCSaver) http.HandlerFunc {
 
 			return
 		}
+
+		id, err := pcSaver.SavePC(req.Name, req.RAMID, req.CPUID, req.GPUID, req.MemoryID)
+		if errors.Is(err, storage.ErrPCAlreadyExists) {
+			log.Info("pc already exists", slog.Int64("id", id))
+
+			render.JSON(w, r, resp.Error("pc already exists"))
+
+			return
+		}
+
+		if err != nil {
+			log.Error("failed to save pc", sl.Err(err))
+
+			render.JSON(w, r, resp.Error("failed to save pc"))
+
+			return
+		}
+
+		log.Info("pc saved", slog.Int64("id", id))
+
+		responseOK(w, r)
 	}
 }
 
@@ -134,6 +157,27 @@ func NewRAM(log *slog.Logger, ramSaver RAMSaver) http.HandlerFunc {
 
 			return
 		}
+
+		id, err := ramSaver.SaveRAM(req.Name, req.Memory_type, req.Capacity)
+		if errors.Is(err, storage.ErrRAMAlreadyExists) {
+			log.Info("ram already exists", slog.Int64("id", id))
+
+			render.JSON(w, r, resp.Error("ram already exists"))
+
+			return
+		}
+
+		if err != nil {
+			log.Error("failed to save ram", sl.Err(err))
+
+			render.JSON(w, r, resp.Error("failed to save ram"))
+
+			return
+		}
+
+		log.Info("ram saved", slog.Int64("id", id))
+
+		responseOK(w, r)
 	}
 }
 
@@ -168,6 +212,27 @@ func NewCPU(log *slog.Logger, cpuSaver CPUSaver) http.HandlerFunc {
 
 			return
 		}
+
+		id, err := cpuSaver.SaveCPU(req.Name, req.Cores, req.Threads, req.Frequency)
+		if errors.Is(err, storage.ErrCPUAlreadyExists) {
+			log.Info("cpu already exists", slog.Int64("id", id))
+
+			render.JSON(w, r, resp.Error("cpu already exists"))
+
+			return
+		}
+
+		if err != nil {
+			log.Error("failed to save cpu", sl.Err(err))
+
+			render.JSON(w, r, resp.Error("failed to save cpu"))
+
+			return
+		}
+
+		log.Info("cpu saved", slog.Int64("id", id))
+
+		responseOK(w, r)
 	}
 }
 
@@ -202,6 +267,27 @@ func NewGPU(log *slog.Logger, gpuSaver GPUSaver) http.HandlerFunc {
 
 			return
 		}
+
+		id, err := gpuSaver.SaveGPU(req.Name, req.Manufacturer, req.Memory, req.Frequency)
+		if errors.Is(err, storage.ErrGPUAlreadyExists) {
+			log.Info("gpu already exists", slog.Int64("id", id))
+
+			render.JSON(w, r, resp.Error("gpu already exists"))
+
+			return
+		}
+
+		if err != nil {
+			log.Error("failed to save gpu", sl.Err(err))
+
+			render.JSON(w, r, resp.Error("failed to save gpu"))
+
+			return
+		}
+
+		log.Info("gpu saved", slog.Int64("id", id))
+
+		responseOK(w, r)
 	}
 }
 
@@ -236,5 +322,32 @@ func NewMemory(log *slog.Logger, memorySaver MemorySaver) http.HandlerFunc {
 
 			return
 		}
+
+		id, err := memorySaver.SaveMemory(req.Name, req.Capacity, req.StorageType)
+		if errors.Is(err, storage.ErrMemoryAlreadyExists) {
+			log.Info("memory already exists", slog.Int64("id", id))
+
+			render.JSON(w, r, resp.Error("memory already exists"))
+
+			return
+		}
+
+		if err != nil {
+			log.Error("failed to save memory", sl.Err(err))
+
+			render.JSON(w, r, resp.Error("failed to save memory"))
+
+			return
+		}
+
+		log.Info("memory saved", slog.Int64("id", id))
+
+		responseOK(w, r)
 	}
+}
+
+func responseOK(w http.ResponseWriter, r *http.Request) {
+	render.JSON(w, r, Response{
+		Response: resp.OK(),
+	})
 }
