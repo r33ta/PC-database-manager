@@ -145,7 +145,7 @@ func (s *Storage) SaveRAM(name, memoryType string, capacity int64) (int64, error
 	res, err := stmt.Exec(name, memoryType, capacity)
 	if err != nil {
 		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
-			return 0, fmt.Errorf("%s: %w", op, storage.ErrRamAlreadyExists)
+			return 0, fmt.Errorf("%s: %w", op, storage.ErrRAMAlreadyExists)
 		}
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -168,7 +168,7 @@ func (s *Storage) SaveCPU(name string, cores, threads, frequency int64) (int64, 
 	res, err := stmt.Exec(name, cores, threads, frequency)
 	if err != nil {
 		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
-			return 0, fmt.Errorf("%s: %w", op, storage.ErrCpuAlreadyExists)
+			return 0, fmt.Errorf("%s: %w", op, storage.ErrCPUAlreadyExists)
 		}
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -191,7 +191,7 @@ func (s *Storage) SaveGPU(name, manufacturer string, memory, frequency int64) (i
 	res, err := stmt.Exec(name, manufacturer, memory, frequency)
 	if err != nil {
 		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
-			return 0, fmt.Errorf("%s: %w", op, storage.ErrGpuAlreadyExists)
+			return 0, fmt.Errorf("%s: %w", op, storage.ErrGPUAlreadyExists)
 		}
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -260,7 +260,7 @@ func (s *Storage) GetCPU(id int64) (*cpu.CPU, error) {
 	var cores, threads, frequency int64
 	err = stmt.QueryRow(id).Scan(&name, &cores, &threads, &frequency)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, storage.ErrCpuNotFound
+		return nil, storage.ErrCPUNotFound
 	}
 	if err != nil {
 		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
@@ -281,7 +281,7 @@ func (s *Storage) GetGPU(id int64) (*gpu.GPU, error) {
 	var memory, frequency int64
 	err = stmt.QueryRow(id).Scan(&name, &manufacturer, &memory, &frequency)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, storage.ErrGpuNotFound
+		return nil, storage.ErrGPUNotFound
 	}
 	if err != nil {
 		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
@@ -302,7 +302,7 @@ func (s *Storage) GetRAM(id int64) (*ram.RAM, error) {
 	var capacity int64
 	err = stmt.QueryRow(id).Scan(&name, &memoryType, &capacity)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, storage.ErrRamNotFound
+		return nil, storage.ErrRAMNotFound
 	}
 	if err != nil {
 		return nil, fmt.Errorf("%s: execute statement: %w", op, err)
