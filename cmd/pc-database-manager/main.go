@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/r33ta/pc-database-manager/internal/config"
+	"github.com/r33ta/pc-database-manager/internal/http-server/handlers/save"
 	mwLogger "github.com/r33ta/pc-database-manager/internal/http-server/middleware/logger"
 	"github.com/r33ta/pc-database-manager/internal/lib/logger/handlers/slogpretty"
 	"github.com/r33ta/pc-database-manager/internal/lib/logger/sl"
@@ -34,8 +35,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	_ = storage
-
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
@@ -43,6 +42,14 @@ func main() {
 	router.Use(mwLogger.New(log))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
+
+	router.Post("/save/pc", save.NewPC(log, storage))
+	router.Post("/save/ram", save.NewRAM(log, storage))
+	router.Post("/save/cpu", save.NewCPU(log, storage))
+	router.Post("/save/gpu", save.NewGPU(log, storage))
+	router.Post("/save/memory", save.NewMemory(log, storage))
+
+	log.Info("starting server", slog.String("address", cfg.Address))
 
 	// TODO: start server
 }
