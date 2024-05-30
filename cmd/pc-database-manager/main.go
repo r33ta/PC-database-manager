@@ -7,7 +7,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/r33ta/pc-database-manager/internal/config"
-	"github.com/r33ta/pc-database-manager/internal/http-server/handlers/save"
+	"github.com/r33ta/pc-database-manager/internal/http-server/handlers/cpu/savecpu"
+	"github.com/r33ta/pc-database-manager/internal/http-server/handlers/gpu/savegpu"
+	"github.com/r33ta/pc-database-manager/internal/http-server/handlers/memory/savememory"
+	"github.com/r33ta/pc-database-manager/internal/http-server/handlers/pc/savepc"
+	"github.com/r33ta/pc-database-manager/internal/http-server/handlers/ram/saveram"
 	mwLogger "github.com/r33ta/pc-database-manager/internal/http-server/middleware/logger"
 	"github.com/r33ta/pc-database-manager/internal/lib/logger/handlers/slogpretty"
 	"github.com/r33ta/pc-database-manager/internal/lib/logger/sl"
@@ -43,11 +47,11 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
-	router.Post("/save/pc", save.NewPC(log, storage))
-	router.Post("/save/ram", save.NewRAM(log, storage))
-	router.Post("/save/cpu", save.NewCPU(log, storage))
-	router.Post("/save/gpu", save.NewGPU(log, storage))
-	router.Post("/save/memory", save.NewMemory(log, storage))
+	router.Post("/save/pc", savepc.NewPC(log, storage))
+	router.Post("/save/ram", saveram.NewRAM(log, storage))
+	router.Post("/save/cpu", savecpu.NewCPU(log, storage))
+	router.Post("/save/gpu", savegpu.NewGPU(log, storage))
+	router.Post("/save/memory", savememory.NewMemory(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
