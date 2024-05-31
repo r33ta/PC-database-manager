@@ -28,9 +28,9 @@ type GPUSaver interface {
 	SaveGPU(name, manufacturer string, memory, frequency int64) (int64, error)
 }
 
-func NewGPU(log *slog.Logger, gpuSaver GPUSaver) http.HandlerFunc {
+func New(log *slog.Logger, gpuSaver GPUSaver) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.save.NewGPU"
+		const op = "handlers.savegpu.New"
 
 		log = log.With(
 			slog.String("op", op),

@@ -27,9 +27,9 @@ type RAMSaver interface {
 	SaveRAM(name, memory_type string, capacity int64) (int64, error)
 }
 
-func NewRAM(log *slog.Logger, ramSaver RAMSaver) http.HandlerFunc {
+func New(log *slog.Logger, ramSaver RAMSaver) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.save.NewRAM"
+		const op = "handlers.saveram.New"
 
 		log = log.With(
 			slog.String("op", op),

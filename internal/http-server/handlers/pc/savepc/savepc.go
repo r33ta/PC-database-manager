@@ -29,9 +29,9 @@ type PCSaver interface {
 	SavePC(name string, ramID, cpuID, gpuID, memoryID int64) (int64, error)
 }
 
-func NewPC(log *slog.Logger, pcSaver PCSaver) http.HandlerFunc {
+func New(log *slog.Logger, pcSaver PCSaver) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.save.NewPC"
+		const op = "handlers.savepc.New"
 
 		log = log.With(
 			slog.String("op", op),

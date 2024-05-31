@@ -28,9 +28,9 @@ type CPUSaver interface {
 	SaveCPU(name string, cores, threads, frequency int64) (int64, error)
 }
 
-func NewCPU(log *slog.Logger, cpuSaver CPUSaver) http.HandlerFunc {
+func New(log *slog.Logger, cpuSaver CPUSaver) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.save.NewCPU"
+		const op = "handlers.savecpu.New"
 
 		log = log.With(
 			slog.String("op", op),

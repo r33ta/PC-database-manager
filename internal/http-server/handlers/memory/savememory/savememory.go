@@ -27,9 +27,9 @@ type MemorySaver interface {
 	SaveMemory(name string, capacity int64, storage_type string) (int64, error)
 }
 
-func NewMemory(log *slog.Logger, memorySaver MemorySaver) http.HandlerFunc {
+func New(log *slog.Logger, memorySaver MemorySaver) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.save.NewMemory"
+		const op = "handlers.savememory.New"
 
 		log = log.With(
 			slog.String("op", op),

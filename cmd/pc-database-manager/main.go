@@ -47,15 +47,13 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
-	router.Post("/save/pc", savepc.NewPC(log, storage))
-	router.Post("/save/ram", saveram.NewRAM(log, storage))
-	router.Post("/save/cpu", savecpu.NewCPU(log, storage))
-	router.Post("/save/gpu", savegpu.NewGPU(log, storage))
-	router.Post("/save/memory", savememory.NewMemory(log, storage))
+	router.Post("/save/pc", savepc.New(log, storage))
+	router.Post("/save/ram", saveram.New(log, storage))
+	router.Post("/save/cpu", savecpu.New(log, storage))
+	router.Post("/save/gpu", savegpu.New(log, storage))
+	router.Post("/save/memory", savememory.New(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
-
-	// TODO: start server
 }
 
 func setupLogger(env string) *slog.Logger {
