@@ -30,7 +30,11 @@ func main() {
 
 	log := setupLogger(cfg.Env)
 
-	log.Info("starting...", slog.String("env", cfg.Env))
+	log.Info(
+		"starting pc-database-manager",
+		slog.String("env", cfg.Env),
+		slog.String("version", "1.0"),
+	)
 	log.Debug("debug messages are enabled")
 
 	storage, err := sqlite.New(cfg.StoragePath)
@@ -52,6 +56,8 @@ func main() {
 	router.Post("/save/cpu", savecpu.New(log, storage))
 	router.Post("/save/gpu", savegpu.New(log, storage))
 	router.Post("/save/memory", savememory.New(log, storage))
+
+	router.Get("/pc/{id}", redirect.New(log, storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
