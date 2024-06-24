@@ -57,7 +57,7 @@ func main() {
 	router.Post("/save/gpu", savegpu.New(log, storage))
 	router.Post("/save/memory", savememory.New(log, storage))
 
-	router.Get("/pc/{id}", redirect.New(log, storage))
+	// Start server
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
